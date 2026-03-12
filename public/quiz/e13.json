@@ -1,0 +1,12 @@
+{
+  "kind": "quiz",
+  "id": "e13",
+  "title": "Skewer the King",
+  "fen": "4k3/4r3/8/8/8/8/4B3/4K3 w - - 0 1",
+  "solution": [
+    "e2b5"
+  ],
+  "theme": "skewer",
+  "difficulty": "easy",
+  "description": "White to move — skewer the king to win the rook."
+}

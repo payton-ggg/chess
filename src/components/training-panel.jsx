@@ -24,6 +24,7 @@ import {
 import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 
 import TrainingOpeningTutorialPanel from "@/components/training-opening-tutorial-panel";
+import TrainingPuzzleQuizPanel from "@/components/training-puzzle-quiz-panel";
 import { Button } from "@/components/ui/button";
 import { ENDGAMES } from "@/data/endgames";
 import { getPuzzleSession, PUZZLES } from "@/data/puzzles";
@@ -1573,12 +1574,12 @@ const MODULES = [
   {
     id: "puzzle",
     icon: Puzzle,
-    label: "Tactical Puzzles",
-    desc: "Sharpen your calculation with curated tactical positions.",
+    label: "Tactical Quizzes",
+    desc: "Load tactical quiz JSON files with hints, solution lines, and board-guided training.",
     color: "text-orange-400",
     bg: "bg-orange-500/10",
     border: "border-orange-500/30 hover:border-orange-400/60",
-    count: `${PUZZLES.length} puzzles`,
+    count: "JSON library",
   },
   {
     id: "opening",
@@ -1589,16 +1590,6 @@ const MODULES = [
     bg: "bg-blue-500/10",
     border: "border-blue-500/30 hover:border-blue-400/60",
     count: "JSON library",
-  },
-  {
-    id: "endgame",
-    icon: Crown,
-    label: "Endgame Training",
-    desc: "Master essential endgame techniques and patterns.",
-    color: "text-yellow-400",
-    bg: "bg-yellow-500/10",
-    border: "border-yellow-500/30 hover:border-yellow-400/60",
-    count: `${ENDGAMES.length} scenarios`,
   },
 ];
 
@@ -1616,7 +1607,7 @@ export default function TrainingPanel({
   onBoardUpdate,
   onRegisterMoveHandler,
 }) {
-  const [activeModule, setActiveModule] = useState(null); // null | "puzzle" | "opening" | "endgame"
+  const [activeModule, setActiveModule] = useState(null); // null | "puzzle" | "opening"
 
   const handleBack = () => {
     onRegisterMoveHandler(null);
@@ -1710,11 +1701,12 @@ export default function TrainingPanel({
 
   return (
     <div className="flex flex-col h-full border-l border-border bg-card animate-in fade-in slide-in-from-right-2 duration-200">
-      {activeModule === "puzzle" && <PuzzleTrainer {...sharedProperties} />}
+      {activeModule === "puzzle" && (
+        <TrainingPuzzleQuizPanel {...sharedProperties} />
+      )}
       {activeModule === "opening" && (
         <TrainingOpeningTutorialPanel {...sharedProperties} />
       )}
-      {activeModule === "endgame" && <EndgameTrainer {...sharedProperties} />}
     </div>
   );
 }

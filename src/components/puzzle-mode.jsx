@@ -10,7 +10,11 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { Chessboard } from "react-chessboard";
 
 import { Button } from "@/components/ui/button";
-import { getPuzzleSession } from "@/data/puzzles";
+import {
+  loadQuizByFile,
+  loadQuizCatalog,
+  shuffleQuizEntries,
+} from "@/lib/puzzle-quizzes";
 
 // Difficulty badge color
 const diffColor = {
@@ -35,12 +39,15 @@ const themeEmoji = {
  *
  */
 export default function PuzzleMode({ onClose, initialDifficulty = null }) {
-  const [puzzles] = useState(() => getPuzzleSession(initialDifficulty));
+  const [quizEntries, setQuizEntries] = useState([]);
+  const [catalogState, setCatalogState] = useState("loading");
+  const [loadError, setLoadError] = useState("");
   const [puzzleIndex, setPuzzleIndex] = useState(0);
   const [sessionStats, setSessionStats] = useState({ solved: 0, failed: 0 });
 
   // Per-puzzle state
   const [chess, setChess] = useState(null); // Chess instance for current puzzle
+  const [puzzle, setPuzzle] = useState(null);
   const [fen, setFen] = useState("");
   const [solutionStep, setSolutionStep] = useState(0); // which move in solution[] we're waiting for
   const [status, setStatus] = useState("idle"); // "idle"|"correct-step"|"wrong"|"solved"|"revealed"
@@ -50,22 +57,79 @@ export default function PuzzleMode({ onClose, initialDifficulty = null }) {
   const [lastMoveSquares, setLastMoveSquares] = useState({});
   const engineTimeoutReference = useRef(null);
 
-  const puzzle = puzzles[puzzleIndex] ?? null;
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadCatalog = async () => {
+      setCatalogState("loading");
+      setLoadError("");
+
+      try {
+        const data = await loadQuizCatalog();
+        if (cancelled) return;
+
+        const filtered = initialDifficulty
+          ? data.items.filter((entry) => entry.difficulty === initialDifficulty)
+          : data.items;
+
+        setQuizEntries(shuffleQuizEntries(filtered));
+        setPuzzleIndex(0);
+        setCatalogState("ready");
+      } catch (error) {
+        if (cancelled) return;
+        setCatalogState("error");
+        setLoadError(
+          error instanceof Error ? error.message : "Failed to load quizzes.",
+        );
+      }
+    };
+
+    loadCatalog();
+
+    return () => {
+      cancelled = true;
+      clearTimeout(engineTimeoutReference.current);
+    };
+  }, [initialDifficulty]);
 
   // ── Initialise / reset on puzzle change ──────────────────────────────────
   useEffect(() => {
-    if (!puzzle) return;
-    clearTimeout(engineTimeoutReference.current);
-    const g = new Chess(puzzle.fen);
-    setChess(g);
-    setFen(puzzle.fen);
-    setSolutionStep(0);
-    setStatus("idle");
-    setWrongMoves(0);
-    setHintUsed(false);
-    setArrows([]);
-    setLastMoveSquares({});
-  }, [puzzle]);
+    const entry = quizEntries[puzzleIndex];
+    if (!entry) return;
+
+    let cancelled = false;
+
+    const loadPuzzle = async () => {
+      clearTimeout(engineTimeoutReference.current);
+
+      try {
+        const nextPuzzle = await loadQuizByFile(entry.file);
+        if (cancelled) return;
+
+        const g = new Chess(nextPuzzle.fen);
+        setPuzzle(nextPuzzle);
+        setChess(g);
+        setFen(nextPuzzle.fen);
+        setSolutionStep(0);
+        setStatus("idle");
+        setWrongMoves(0);
+        setHintUsed(false);
+        setArrows([]);
+        setLastMoveSquares({});
+      } catch (error) {
+        if (cancelled) return;
+        setLoadError(
+          error instanceof Error ? error.message : "Failed to open quiz.",
+        );
+      }
+    };
+
+    loadPuzzle();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [puzzleIndex, quizEntries]);
 
   // ── Play the "engine" response (odd solution steps) ───────────────────────
   const playEngineMove = useCallback(
@@ -183,15 +247,47 @@ export default function PuzzleMode({ onClose, initialDifficulty = null }) {
   // ── Navigate puzzles ──────────────────────────────────────────────────────
   const goNext = useCallback(() => {
     clearTimeout(engineTimeoutReference.current);
-    if (puzzleIndex < puzzles.length - 1) setPuzzleIndex((index) => index + 1);
-  }, [puzzleIndex, puzzles.length]);
+    if (puzzleIndex < quizEntries.length - 1) {
+      setPuzzleIndex((index) => index + 1);
+    }
+  }, [puzzleIndex, quizEntries.length]);
 
   const goPrevious = useCallback(() => {
     clearTimeout(engineTimeoutReference.current);
     if (puzzleIndex > 0) setPuzzleIndex((index) => index - 1);
   }, [puzzleIndex]);
 
-  if (!puzzle) return null;
+  if (catalogState === "loading") {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+        <div className="bg-card border border-border rounded-2xl shadow-2xl p-6 text-sm text-muted-foreground">
+          Loading quiz library...
+        </div>
+      </div>
+    );
+  }
+
+  if (catalogState === "ready" && !puzzle) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+        <div className="bg-card border border-border rounded-2xl shadow-2xl p-6 text-sm text-muted-foreground">
+          Loading puzzle...
+        </div>
+      </div>
+    );
+  }
+
+  if (catalogState === "error") {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+        <div className="bg-card border border-border rounded-2xl shadow-2xl p-6 max-w-md w-full space-y-3">
+          <p className="text-sm font-semibold text-foreground">Quiz load failed</p>
+          <p className="text-xs text-muted-foreground">{loadError || "No quizzes available."}</p>
+          <Button onClick={onClose} className="w-full">Close</Button>
+        </div>
+      </div>
+    );
+  }
 
   const orientation = new Chess(puzzle.fen).turn() === "w" ? "white" : "black";
   const progressPct = ((solutionStep / puzzle.solution.length) * 100).toFixed(
@@ -219,9 +315,9 @@ export default function PuzzleMode({ onClose, initialDifficulty = null }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="bg-card border border-border rounded-2xl shadow-2xl animate-in fade-in zoom-in-95 duration-200 flex flex-col md:flex-row gap-0 w-full max-w-[900px] overflow-hidden max-h-[95vh]">
+      <div className="bg-card border border-border rounded-2xl shadow-2xl animate-in fade-in zoom-in-95 duration-200 flex flex-col md:flex-row gap-0 w-full max-w-225 overflow-hidden max-h-[95vh]">
         {/* ── Left: Board ──────────────────────────────────────────────────── */}
-        <div className="shrink-0 w-full md:w-[420px] flex items-center justify-center p-4 bg-black/20">
+        <div className="shrink-0 w-full md:w-105 flex items-center justify-center p-4 bg-black/20">
           <div className="w-full">
             <Chessboard
               id="puzzle-board"
@@ -254,7 +350,7 @@ export default function PuzzleMode({ onClose, initialDifficulty = null }) {
                 🧩 Puzzle Mode
               </p>
               <p className="text-xs text-muted-foreground">
-                Puzzle {puzzleIndex + 1} / {puzzles.length}
+                Puzzle {puzzleIndex + 1} / {quizEntries.length}
               </p>
             </div>
             <button
@@ -370,11 +466,11 @@ export default function PuzzleMode({ onClose, initialDifficulty = null }) {
             {(status === "solved" || status === "revealed") && (
               <Button
                 onClick={goNext}
-                disabled={puzzleIndex >= puzzles.length - 1}
+                disabled={puzzleIndex >= quizEntries.length - 1}
                 className="w-full"
               >
                 <ChevronRight className="w-4 h-4 mr-1" />
-                {puzzleIndex >= puzzles.length - 1
+                {puzzleIndex >= quizEntries.length - 1
                   ? "All puzzles done! 🎉"
                   : "Next Puzzle"}
               </Button>
@@ -395,14 +491,14 @@ export default function PuzzleMode({ onClose, initialDifficulty = null }) {
             </Button>
 
             {/* Dot indicators */}
-            <div className="flex gap-1 flex-wrap justify-center max-w-[160px]">
-              {puzzles
+            <div className="flex gap-1 flex-wrap justify-center max-w-40">
+              {quizEntries
                 .slice(Math.max(0, puzzleIndex - 4), puzzleIndex + 5)
-                .map((p, index) => {
+                .map((entry, index) => {
                   const absIndex = Math.max(0, puzzleIndex - 4) + index;
                   return (
                     <button
-                      key={p.id}
+                      key={entry.id}
                       onClick={() => {
                         clearTimeout(engineTimeoutReference.current);
                         setPuzzleIndex(absIndex);
@@ -410,13 +506,13 @@ export default function PuzzleMode({ onClose, initialDifficulty = null }) {
                       className={`w-2 h-2 rounded-full transition-colors ${
                         absIndex === puzzleIndex
                           ? "bg-primary"
-                          : p.difficulty === "hard"
+                          : entry.difficulty === "hard"
                             ? "bg-red-500/50"
-                            : p.difficulty === "medium"
+                            : entry.difficulty === "medium"
                               ? "bg-yellow-500/50"
                               : "bg-green-500/50"
                       }`}
-                      title={`Puzzle ${absIndex + 1}: ${p.title}`}
+                      title={`Puzzle ${absIndex + 1}: ${entry.title}`}
                     />
                   );
                 })}
@@ -426,7 +522,7 @@ export default function PuzzleMode({ onClose, initialDifficulty = null }) {
               variant="ghost"
               size="sm"
               onClick={goNext}
-              disabled={puzzleIndex >= puzzles.length - 1}
+              disabled={puzzleIndex >= quizEntries.length - 1}
               className="text-muted-foreground"
             >
               Skip

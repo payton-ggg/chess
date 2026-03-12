@@ -1,0 +1,12 @@
+{
+  "kind": "quiz",
+  "id": "m16",
+  "title": "Discovered Check Wins",
+  "fen": "r1bq1rk1/ppp1ppbp/2np1np1/8/3PP3/2N1BP2/PPP1N1PP/R2QKB1R b KQ - 0 8",
+  "solution": [
+    "d6e4"
+  ],
+  "theme": "discovered",
+  "difficulty": "medium",
+  "description": "Black to move — uncover an attack on the queen."
+}

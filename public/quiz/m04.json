@@ -1,0 +1,12 @@
+{
+  "kind": "quiz",
+  "id": "m04",
+  "title": "Pin and Win",
+  "fen": "r2qkb1r/ppp2ppp/2n1pn2/3p4/3P1B2/2NQ4/PPP1PPPP/R3KBNR w KQkq - 0 7",
+  "solution": [
+    "f4b8"
+  ],
+  "theme": "pin",
+  "difficulty": "medium",
+  "description": "White to move — pin a piece to win material."
+}

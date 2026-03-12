@@ -1,0 +1,16 @@
+{
+  "kind": "quiz",
+  "id": "h06",
+  "title": "Double Bishop Sacrifice",
+  "fen": "r1bq1rk1/pp3ppp/2n1pn2/2pp4/3P4/1BNQ1N2/PPP2PPP/R1B1K2R w KQ - 0 9",
+  "solution": [
+    "b3f7",
+    "f8f7",
+    "f3e5",
+    "f6e4",
+    "d3g6"
+  ],
+  "theme": "deflection",
+  "difficulty": "hard",
+  "description": "White to move — find the violent combination starting with a bishop sacrifice."
+}

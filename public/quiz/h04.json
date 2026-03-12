@@ -1,0 +1,14 @@
+{
+  "kind": "quiz",
+  "id": "h04",
+  "title": "Smothered Mate",
+  "fen": "r2q1rk1/ppp2ppp/5n2/4N3/3P4/8/PPP2PPP/R1BQK2R w KQ - 0 12",
+  "solution": [
+    "e5f7",
+    "f8f7",
+    "d1d8"
+  ],
+  "theme": "checkmate",
+  "difficulty": "hard",
+  "description": "White to move — a queen sacrifice sets up a king trap."
+}

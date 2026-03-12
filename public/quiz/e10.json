@@ -1,0 +1,12 @@
+{
+  "kind": "quiz",
+  "id": "e10",
+  "title": "King Side Mating Net",
+  "fen": "5rk1/5ppp/8/8/8/8/5PPP/5RK1 b - - 0 1",
+  "solution": [
+    "f8f1"
+  ],
+  "theme": "back-rank",
+  "difficulty": "easy",
+  "description": "Black to move — exploit the same weakness White has."
+}

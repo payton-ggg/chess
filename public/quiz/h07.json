@@ -1,0 +1,14 @@
+{
+  "kind": "quiz",
+  "id": "h07",
+  "title": "Rook Sacrifice to Open File",
+  "fen": "2r1r1k1/pp3ppp/2n5/3pPB2/3p4/2NB4/PP3PPP/R3R1K1 w - - 0 17",
+  "solution": [
+    "f5h7",
+    "g8h7",
+    "e1h1"
+  ],
+  "theme": "deflection",
+  "difficulty": "hard",
+  "description": "White to move — sacrifice to expose the king on the h-file."
+}

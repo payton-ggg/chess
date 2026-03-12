@@ -1,0 +1,12 @@
+{
+  "kind": "quiz",
+  "id": "m17",
+  "title": "Rook Skewer",
+  "fen": "4k3/4r3/4R3/4K3/8/8/8/8 w - - 0 1",
+  "solution": [
+    "e6e8"
+  ],
+  "theme": "skewer",
+  "difficulty": "medium",
+  "description": "White to move — force the king to reveal the rook behind it."
+}

@@ -1,0 +1,12 @@
+{
+  "kind": "quiz",
+  "id": "m05",
+  "title": "Queen Fork",
+  "fen": "r3k2r/ppp2ppp/2n1p3/3qn3/3P4/2N2N2/PPP2PPP/R1BQK2R w KQkq - 0 10",
+  "solution": [
+    "d1d5"
+  ],
+  "theme": "fork",
+  "difficulty": "medium",
+  "description": "White to move — a queen move wins by forking."
+}
