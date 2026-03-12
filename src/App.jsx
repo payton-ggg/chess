@@ -114,26 +114,19 @@ const App = () => {
       return g;
     }
     return displayGame;
-  }, [
-    trainingBoard.isTrainingActive,
-    trainingBoard.fen,
-    displayGame,
-  ]);
+  }, [trainingBoard.isTrainingActive, trainingBoard.fen, displayGame]);
 
-  const displayBoardOrientation =
-    trainingBoard.isTrainingActive
-      ? trainingBoard.orientation
-      : boardOrientation;
+  const displayBoardOrientation = trainingBoard.isTrainingActive
+    ? trainingBoard.orientation
+    : boardOrientation;
 
-  const displayBoardArrows =
-    trainingBoard.isTrainingActive
-      ? trainingBoard.arrows
-      : bestMoveArrows;
+  const displayBoardArrows = trainingBoard.isTrainingActive
+    ? trainingBoard.arrows
+    : bestMoveArrows;
 
-  const displayBoardLastMove =
-    trainingBoard.isTrainingActive
-      ? null
-      : displayLastMoveSquares;
+  const displayBoardLastMove = trainingBoard.isTrainingActive
+    ? null
+    : displayLastMoveSquares;
 
   const aiTimeoutReference = useRef(null);
   const [savedGamesOpen, setSavedGamesOpen] = useState(false);
@@ -649,14 +642,15 @@ const App = () => {
     (sourceSquare, targetSquare, piece) => {
       // ── Route to training handler when training is active ──
       if (trainingHandlerReference.current) {
-        trainingHandlerReference.current(sourceSquare, targetSquare);
-        return null;
+        return Boolean(
+          trainingHandlerReference.current(sourceSquare, targetSquare),
+        );
       }
 
       const game = gameReference.current;
       const preFen = game.fen();
 
-      if (viewIndexReference.current !== null) return null;
+      if (viewIndexReference.current !== null) return false;
 
       // Queue if not player's turn
       if (
@@ -680,7 +674,7 @@ const App = () => {
           setPremove(pm);
           premoveReference.current = pm;
         }
-        return null;
+        return false;
       }
 
       // Detect pawn promotion
@@ -705,9 +699,9 @@ const App = () => {
       try {
         move = game.move({ from: sourceSquare, to: targetSquare, promotion });
       } catch {
-        return null;
+        return false;
       }
-      if (!move) return null;
+      if (!move) return false;
 
       setFen(game.fen());
       setMoveHistory((previous) => [
@@ -893,6 +887,8 @@ const App = () => {
       } catch (error) {
         console.error("Failed to load position:", error);
       }
+
+      return true;
     },
     [triggerPostGameAnalysis, isAnalyzingRef],
   );
@@ -997,13 +993,9 @@ const App = () => {
             game={displayBoardGame}
             onMove={handleMove}
             lastMoveSquares={displayBoardLastMove}
-            isAIThinking={
-              isAIThinking && !trainingBoard.isTrainingActive
-            }
+            isAIThinking={isAIThinking && !trainingBoard.isTrainingActive}
             boardOrientation={displayBoardOrientation}
-            isReviewMode={
-              viewIndex !== null && !trainingBoard.isTrainingActive
-            }
+            isReviewMode={viewIndex !== null && !trainingBoard.isTrainingActive}
             arrows={displayBoardArrows}
             premove={premove}
             playerColor={playerColor}

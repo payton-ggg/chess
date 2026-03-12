@@ -165,16 +165,6 @@ const TrainingOpeningTutorialPanel = ({
       : null;
 
   useEffect(() => {
-    if (phase === "training") {
-      onRegisterMoveHandler(handleTrainingMoveReference.current);
-    } else {
-      onRegisterMoveHandler(null);
-    }
-
-    return () => onRegisterMoveHandler(null);
-  }, [onRegisterMoveHandler, phase]);
-
-  useEffect(() => {
     clearTimeout(opponentTimerReference.current);
 
     if (
@@ -209,8 +199,7 @@ const TrainingOpeningTutorialPanel = ({
           setStatus("complete");
           setFeedback({
             type: "success",
-            text:
-              selectedTutorial.completionSummary || "Tutorial complete.",
+            text: selectedTutorial.completionSummary || "Tutorial complete.",
           });
           return;
         }
@@ -226,13 +215,7 @@ const TrainingOpeningTutorialPanel = ({
     }, 900);
 
     return () => clearTimeout(opponentTimerReference.current);
-  }, [
-    currentStep,
-    currentStepIndex,
-    phase,
-    pushBoardState,
-    selectedTutorial,
-  ]);
+  }, [currentStep, currentStepIndex, phase, pushBoardState, selectedTutorial]);
 
   const handleTrainingMove = useCallback(
     (from, to) => {
@@ -267,8 +250,7 @@ const TrainingOpeningTutorialPanel = ({
             setStatus("complete");
             setFeedback({
               type: "success",
-              text:
-                selectedTutorial.completionSummary || "Tutorial complete.",
+              text: selectedTutorial.completionSummary || "Tutorial complete.",
             });
           } else {
             setStatus("idle");
@@ -297,20 +279,18 @@ const TrainingOpeningTutorialPanel = ({
         return false;
       }
     },
-    [
-      currentStep,
-      currentStepIndex,
-      pushBoardState,
-      selectedTutorial,
-      status,
-    ],
+    [currentStep, currentStepIndex, pushBoardState, selectedTutorial, status],
   );
 
-  const handleTrainingMoveReference = useRef(handleTrainingMove);
-
   useEffect(() => {
-    handleTrainingMoveReference.current = handleTrainingMove;
-  }, [handleTrainingMove]);
+    if (phase !== "training") {
+      onRegisterMoveHandler(null);
+      return () => onRegisterMoveHandler(null);
+    }
+
+    onRegisterMoveHandler(handleTrainingMove);
+    return () => onRegisterMoveHandler(null);
+  }, [handleTrainingMove, onRegisterMoveHandler, phase]);
 
   const handleBackToList = () => {
     clearTimeout(opponentTimerReference.current);
@@ -364,7 +344,8 @@ const TrainingOpeningTutorialPanel = ({
             className="w-full bg-muted/50 border border-border rounded-md px-2.5 py-1.5 text-xs text-foreground placeholder:text-muted-foreground outline-none focus:border-primary/50 transition-colors"
           />
           <p className="text-[11px] text-muted-foreground leading-relaxed">
-            The library is loaded from `/public/tutorial/*.json` so you can keep adding curated lessons.
+            The library is loaded from `/public/tutorial/*.json` so you can keep
+            adding curated lessons.
           </p>
         </div>
 
@@ -474,7 +455,8 @@ const TrainingOpeningTutorialPanel = ({
       <div className="px-3 py-2 border-b border-border shrink-0">
         <div className="flex items-center justify-between text-[11px] text-muted-foreground mb-1.5">
           <span>
-            Step {Math.min(currentStepIndex + 1, totalSteps || 1)} of {totalSteps}
+            Step {Math.min(currentStepIndex + 1, totalSteps || 1)} of{" "}
+            {totalSteps}
           </span>
           <span className="text-primary font-medium">{progressPct}%</span>
         </div>
@@ -599,7 +581,10 @@ const TrainingOpeningTutorialPanel = ({
               Objectives
             </p>
             {selectedTutorial.objectives.map((objective) => (
-              <p key={objective} className="text-[11px] text-muted-foreground leading-relaxed">
+              <p
+                key={objective}
+                className="text-[11px] text-muted-foreground leading-relaxed"
+              >
                 {objective}
               </p>
             ))}
@@ -612,7 +597,10 @@ const TrainingOpeningTutorialPanel = ({
               Core plans
             </p>
             {selectedTutorial.plans.map((plan) => (
-              <p key={plan} className="text-[11px] text-muted-foreground leading-relaxed">
+              <p
+                key={plan}
+                className="text-[11px] text-muted-foreground leading-relaxed"
+              >
                 {plan}
               </p>
             ))}
@@ -631,7 +619,11 @@ const TrainingOpeningTutorialPanel = ({
             <RotateCcw className="h-3 w-3 mr-1" />
             Restart
           </Button>
-          <Button size="sm" className="flex-1 text-xs h-7" onClick={handleBackToList}>
+          <Button
+            size="sm"
+            className="flex-1 text-xs h-7"
+            onClick={handleBackToList}
+          >
             <BookOpen className="h-3 w-3 mr-1" />
             Tutorial Library
           </Button>

@@ -337,7 +337,7 @@ const BoardPanel = ({
     setRightClickedSquares({});
 
     const result = onMove(sourceSquare, targetSquare, piece);
-    return result !== null;
+    return Boolean(result);
   };
 
   // ── Right-click to highlight squares ──

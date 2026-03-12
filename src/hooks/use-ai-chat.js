@@ -235,17 +235,17 @@ const useAiChat = ({
         const summary =
           provider === "google"
             ? await summarizeGoogleConversation({
-              messages: slice,
-              existingSummary: conversationSummary,
-              apiKey,
-              model,
-            })
+                messages: slice,
+                existingSummary: conversationSummary,
+                apiKey,
+                model,
+              })
             : await summarizeConversation({
-              messages: slice,
-              existingSummary: conversationSummary,
-              apiKey,
-              model,
-            });
+                messages: slice,
+                existingSummary: conversationSummary,
+                apiKey,
+                model,
+              });
 
         return trimSummary(summary);
       } catch {
