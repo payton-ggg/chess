@@ -6,7 +6,9 @@
       "WebFetch(domain:ai.google.dev)",
       "WebFetch(domain:github.com)",
       "Bash(npm install @google/genai)",
-      "Bash(node -e \"const pkg = require\\(''./node_modules/@google/genai/package.json''\\); console.log\\(pkg.version\\)\")"
+      "Bash(node -e \"const pkg = require\\(''./node_modules/@google/genai/package.json''\\); console.log\\(pkg.version\\)\")",
+      "WebSearch",
+      "WebFetch(domain:www.learnchesswithdrwolf.com)"
     ]
   }
 }
