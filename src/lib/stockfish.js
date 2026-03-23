@@ -49,10 +49,7 @@ export class StockfishEngine {
     this._initPromise = new Promise((resolve, reject) => {
       try {
         const workerUrl = withBaseUrl("stockfish-18-lite-single.js");
-        const wasmUrl = withBaseUrl("stockfish-18-lite-single.wasm");
-        this._worker = new Worker(
-          `${workerUrl}#${encodeURIComponent(wasmUrl)},worker`,
-        );
+        this._worker = new Worker(workerUrl);
 
         this._worker.onmessage = (e) => {
           const line = typeof e === "string" ? e : e.data;
