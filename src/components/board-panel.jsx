@@ -144,6 +144,8 @@ const BoardPanel = ({
   isReviewMode = false,
   premove = null,
   onCancelPremove = null,
+  activeMoveTo = null,
+  activeMoveQuality = null,
 }) => {
   const containerReference = useRef(null);
   const [boardWidth, setBoardWidth] = useState(400);
@@ -415,6 +417,55 @@ const BoardPanel = ({
     premove,
   ]);
 
+  // ── Render Move Quality Badge ──
+  const qualityBadge = useMemo(() => {
+    if (!activeMoveTo || !activeMoveQuality) return null;
+    const file = activeMoveTo[0];
+    const rank = activeMoveTo[1];
+
+    let fileIndex = file.charCodeAt(0) - 97; // a=0, h=7
+    let rankIndex = 8 - Number.parseInt(rank, 10); // 8=0, 1=7
+
+    if (boardOrientation === "black") {
+      fileIndex = 7 - fileIndex;
+      rankIndex = 7 - rankIndex;
+    }
+
+    if (fileIndex < 0 || fileIndex > 7 || rankIndex < 0 || rankIndex > 7) {
+      return null;
+    }
+
+    const QUALITY_META = {
+      Brilliant: { emoji: "💎", colorClass: "bg-cyan-500 text-white border-cyan-400 shadow-cyan-500/30" },
+      Excellent: { emoji: "✨", colorClass: "bg-emerald-500 text-white border-emerald-400 shadow-emerald-500/30" },
+      Good: { emoji: "👍", colorClass: "bg-green-600 text-white border-green-500/30" },
+      Inaccuracy: { emoji: "⚠️", colorClass: "bg-yellow-500 text-zinc-900 border-yellow-400 shadow-yellow-500/30" },
+      Mistake: { emoji: "❌", colorClass: "bg-orange-500 text-white border-orange-400 shadow-orange-500/30" },
+      Blunder: { emoji: "💥", colorClass: "bg-red-500 text-white border-red-400 shadow-red-500/30" },
+    };
+
+    const meta = QUALITY_META[activeMoveQuality];
+    if (!meta) return null;
+
+    return (
+      <div
+        className="absolute pointer-events-none z-10"
+        style={{
+          left: `${fileIndex * 12.5}%`,
+          top: `${rankIndex * 12.5}%`,
+          width: "12.5%",
+          height: "12.5%",
+        }}
+      >
+        <div
+          className={`absolute -top-1.5 -right-1.5 flex items-center justify-center shadow-md rounded-full w-5.5 h-5.5 border border-background ${meta.colorClass} text-[11px] font-bold animate-in zoom-in duration-200`}
+        >
+          {meta.emoji}
+        </div>
+      </div>
+    );
+  }, [activeMoveTo, activeMoveQuality, boardOrientation]);
+
   return (
     <div
       ref={containerReference}
@@ -547,6 +598,7 @@ const BoardPanel = ({
             clearArrowsOnClick: false,
           }}
         />
+        {qualityBadge}
       </div>
 
       {/* Captured pieces — player (bottom) */}

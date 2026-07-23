@@ -169,6 +169,7 @@ const useEngineCoach = ({
   setAnalysisProgress,
   setGameReport,
   setGameReportOpen,
+  onMoveAnalyzed,
 }) => {
   const messageSeedReference = useRef(0);
   const isAnalyzingReference = useRef(false);
@@ -227,11 +228,14 @@ const useEngineCoach = ({
           ...previous,
           { role: "assistant", content: card, type: "my-move-analysis" },
         ]);
+        if (onMoveAnalyzed) {
+          onMoveAnalyzed(postFen, card.quality);
+        }
       } catch {
         updateEvalBar(postFen);
       }
     },
-    [applyEvalScore, updateEvalBar, setMessages],
+    [applyEvalScore, updateEvalBar, setMessages, onMoveAnalyzed],
   );
 
   // ── Intelligence: detect threats after opponent's move ────────────────

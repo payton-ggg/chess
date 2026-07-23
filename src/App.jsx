@@ -160,6 +160,21 @@ const App = () => {
     premoveReference.current = premove;
   }, [premove]);
 
+  const activeMoveIndex = viewIndex !== null ? viewIndex : moveHistory.length - 1;
+  const activeMove = !trainingBoard.isTrainingActive && activeMoveIndex >= 0
+    ? moveHistory[activeMoveIndex]
+    : null;
+
+  const activeMoveTo = activeMove ? activeMove.to : null;
+
+  const activeMoveQuality = useMemo(() => {
+    if (!activeMove) return null;
+    if (gameReport?.moveSummary?.[activeMoveIndex]) {
+      return gameReport.moveSummary[activeMoveIndex].quality;
+    }
+    return activeMove.quality || null;
+  }, [activeMove, activeMoveIndex, gameReport]);
+
   // ── Coach mode ───────────────────────────────────────────────────────────
   const [coachMode, setCoachMode] = useState("engine");
   const coachModeReference = useRef(coachMode);
@@ -185,6 +200,19 @@ const App = () => {
     clockReference.current = clock;
   });
 
+  const handleMoveAnalyzed = useCallback((postFen, quality) => {
+    setMoveHistory((prev) => {
+      for (let i = prev.length - 1; i >= 0; i--) {
+        if (prev[i].fen === postFen) {
+          const next = [...prev];
+          next[i] = { ...next[i], quality };
+          return next;
+        }
+      }
+      return prev;
+    });
+  }, []);
+
   // ── Engine coach ─────────────────────────────────────────────────────────
   const {
     applyEvalScore,
@@ -207,6 +235,7 @@ const App = () => {
     setAnalysisProgress,
     setGameReport,
     setGameReportOpen,
+    onMoveAnalyzed: handleMoveAnalyzed,
   });
 
   // ── AI board action callbacks (used by Google Gemini agent) ─────────────
@@ -283,6 +312,7 @@ const App = () => {
       makeMove: handleAIMakeMove,
       flipBoard: handleAIFlipBoard,
     },
+    onMoveAnalyzed: handleMoveAnalyzed,
   });
 
   // ── Auto-load last auto-save on mount ────────────────────────────────────
@@ -1001,6 +1031,8 @@ const App = () => {
             playerColor={playerColor}
             onPlayerColorChange={handlePlayerColorChange}
             isGameInProgress={moveHistory.length > 0}
+            activeMoveTo={activeMoveTo}
+            activeMoveQuality={activeMoveQuality}
             onCancelPremove={() => {
               setPremove(null);
               premoveReference.current = null;

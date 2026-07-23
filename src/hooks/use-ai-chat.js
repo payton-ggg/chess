@@ -216,6 +216,7 @@ const useAiChat = ({
   setMoveQuality,
   setCoachMode,
   boardActions,
+  onMoveAnalyzed,
 }) => {
   const [conversationSummary, setConversationSummary] = useState("");
   const [tokenStats, setTokenStats] = useState(createTokenStats);
@@ -528,12 +529,15 @@ const useAiChat = ({
         const matched = validQualities.find(
           (q) => q.toLowerCase() === quality.toLowerCase(),
         );
-        if (matched) setMoveQuality(matched);
+        if (matched) {
+          setMoveQuality(matched);
+          if (onMoveAnalyzed) onMoveAnalyzed(currentFen, matched);
+        }
       } catch {
         // silently ignore evaluation errors
       }
     },
-    [setMoveQuality],
+    [setMoveQuality, onMoveAnalyzed],
   );
 
   // ── Ask AI to explain a tactical threat ─────────────────────────────────
