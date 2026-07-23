@@ -3,7 +3,6 @@ const ASSETS = [
   "/",
   "/index.html",
   "/logo.png",
-  "/vite.svg"
 ];
 
 self.addEventListener("install", (event) => {
