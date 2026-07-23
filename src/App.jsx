@@ -494,12 +494,17 @@ const App = () => {
           });
           if (!move) return;
 
-          const newHistory = [
-            ...currentHistory,
-            { san: move.san, fen: game.fen(), from: move.from, to: move.to },
-          ];
-          setFen(game.fen());
-          setMoveHistory(newHistory);
+          const botFen = game.fen();
+          const botMoveEntry = { san: move.san, fen: botFen, from: move.from, to: move.to };
+          const newHistory = [...currentHistory, botMoveEntry];
+          setFen(botFen);
+          setMoveHistory((prev) => {
+            // Append bot's move to the CURRENT state (preserving quality fields)
+            const last = prev[prev.length - 1];
+            const botAlreadyAdded = last && last.fen === botFen;
+            if (botAlreadyAdded) return prev;
+            return [...prev, botMoveEntry];
+          });
           setLastMoveSquares({ from: move.from, to: move.to });
           clockReference.current.addIncrement(move.color);
 
@@ -744,10 +749,11 @@ const App = () => {
       }
       if (!move) return false;
 
-      setFen(game.fen());
+      const postFen = game.fen();
+      setFen(postFen);
       setMoveHistory((previous) => [
         ...previous,
-        { san: move.san, fen: game.fen(), from: move.from, to: move.to },
+        { san: move.san, fen: postFen, from: move.from, to: move.to },
       ]);
       setMoveQuality(null);
       setLastMoveSquares({ from: sourceSquare, to: targetSquare });
@@ -758,7 +764,7 @@ const App = () => {
 
       const newMoveHistory = [
         ...moveHistory,
-        { san: move.san, fen: game.fen(), from: move.from, to: move.to },
+        { san: move.san, fen: postFen, from: move.from, to: move.to },
       ];
 
       if (game.isCheckmate() || game.isStalemate() || game.isDraw()) {
@@ -784,8 +790,6 @@ const App = () => {
       } else {
         playSound("move");
       }
-
-      const postFen = game.fen();
 
       if (isLiveMode && coachMode === "engine") {
         const playerAnalysis = engineLiveAnalyzePlayerMove(
