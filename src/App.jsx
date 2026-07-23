@@ -160,10 +160,21 @@ const App = () => {
     premoveReference.current = premove;
   }, [premove]);
 
-  const activeMoveIndex = viewIndex !== null ? viewIndex : moveHistory.length - 1;
-  const activeMove = !trainingBoard.isTrainingActive && activeMoveIndex >= 0
-    ? moveHistory[activeMoveIndex]
-    : null;
+  const activeMoveIndex = useMemo(() => {
+    if (trainingBoard.isTrainingActive) return -1;
+    if (viewIndex !== null) return viewIndex;
+
+    // Live mode: find the last player move
+    for (let i = moveHistory.length - 1; i >= 0; i--) {
+      const isPlayerMove = playerColor === "white" ? (i % 2 === 0) : (i % 2 !== 0);
+      if (isPlayerMove) return i;
+    }
+    return -1;
+  }, [viewIndex, moveHistory, playerColor, trainingBoard.isTrainingActive]);
+
+  const activeMove = useMemo(() => {
+    return activeMoveIndex >= 0 ? moveHistory[activeMoveIndex] : null;
+  }, [activeMoveIndex, moveHistory]);
 
   const activeMoveTo = activeMove ? activeMove.to : null;
 
