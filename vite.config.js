@@ -8,8 +8,8 @@ import { fileURLToPath } from 'node:url'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-export default defineConfig(({ command }) => ({
-  base: command === 'build' ? '/chess/' : '/',
+export default defineConfig({
+  base: process.env.VITE_BASE ?? '/',
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
@@ -26,4 +26,4 @@ export default defineConfig(({ command }) => ({
       '@assets': path.resolve(__dirname, 'assets'),
     },
   },
-}))
+})
