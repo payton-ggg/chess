@@ -1,0 +1,18 @@
+{
+  "short_name": "Chess Coach",
+  "name": "AI Chess Coach",
+  "description": "Play chess with real-time AI and Stockfish analysis",
+  "start_url": "/",
+  "background_color": "#09090b",
+  "theme_color": "#09090b",
+  "display": "standalone",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ]
+}
