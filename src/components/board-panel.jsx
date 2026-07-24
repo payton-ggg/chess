@@ -616,7 +616,7 @@ const BoardPanel = ({
             showNotation: true,
             arrows,
             clearArrowsOnPositionChange: false,
-            clearArrowsOnClick: false,
+            clearArrowsOnClick: true,
           }}
         />
         {qualityBadge}
