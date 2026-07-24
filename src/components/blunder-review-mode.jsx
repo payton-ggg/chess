@@ -164,7 +164,7 @@ const BlunderReviewMode = ({ blunders = [], onClose }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-3 sm:p-5 animate-in fade-in duration-200">
-      <div className="bg-card border border-border rounded-2xl shadow-2xl animate-in fade-in zoom-in-95 duration-200 flex flex-col lg:flex-row w-full max-w-400 max-h-[135vh] overflow-hidden">
+      <div className="bg-card border border-border rounded-2xl shadow-2xl animate-in fade-in zoom-in-95 duration-200 flex flex-col lg:flex-row w-full max-w-400 max-h-[155vh] overflow-hidden">
         {/* ── Board section ────────────────────────────────────────────────── */}
         <div className="lg:shrink-0 lg:w-130 flex flex-col items-center justify-center p-3 sm:p-5 bg-black/30">
           {/* Board header */}
@@ -188,7 +188,7 @@ const BlunderReviewMode = ({ blunders = [], onClose }) => {
           {/* The board – full width of its container */}
           <div
             className="w-full"
-            style={{ maxWidth: "min(100%, calc(95vh - 220px))" }}
+            style={{ maxWidth: "min(100%, calc(115vh - 220px))" }}
           >
             <Chessboard
               options={{
