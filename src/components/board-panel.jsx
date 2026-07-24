@@ -559,7 +559,7 @@ const BoardPanel = ({
       {/* Chess Board */}
       <div
         className="rounded-lg overflow-hidden shadow-lg border border-border relative"
-        style={{ width: boardWidth - 20, height: boardWidth - 20 }}
+        style={{ width: boardWidth - 60, height: boardWidth - 60 }}
       >
         {/* AI thinking overlay */}
         {isAIThinking && (
