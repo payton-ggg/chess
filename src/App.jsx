@@ -1,9 +1,11 @@
 /* eslint-disable max-lines-per-function */
 import { Chess } from "chess.js";
+import { BookOpen, GraduationCap, MessageSquare } from "lucide-react";
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 
 import BlunderReviewMode from "@/components/blunder-review-mode";
 import BoardPanel, { playSound } from "@/components/board-panel";
+import BottomSheet from "@/components/bottom-sheet";
 import ChatPanel from "@/components/chat-panel";
 import ControlBar from "@/components/control-bar";
 import EndgameMode from "@/components/endgame-mode";
@@ -20,6 +22,7 @@ import useAiChat from "@/hooks/use-ai-chat";
 import { useChessClock, TIME_CONTROLS } from "@/hooks/use-chess-clock";
 import useDarkMode from "@/hooks/use-dark-mode";
 import useEngineCoach from "@/hooks/use-engine-coach";
+import useIsDesktop from "@/hooks/use-is-desktop";
 import { migrateMoveHistory } from "@/lib/chess-helpers";
 import { autoSave, loadAutoSave } from "@/lib/db";
 import { getBestMove } from "@/lib/engine";
@@ -70,6 +73,7 @@ const App = () => {
 
   // ── Dark mode ────────────────────────────────────────────────────────────
   const { isDarkMode, toggleDarkMode } = useDarkMode();
+  const isDesktop = useIsDesktop();
 
   // ── Review mode ──────────────────────────────────────────────────────────
   const displayGame = useMemo(() => {
@@ -132,7 +136,7 @@ const App = () => {
   const [savedGamesOpen, setSavedGamesOpen] = useState(false);
   const autoSaveTimerReference = useRef(null);
   const [positionSetupOpen, setPositionSetupOpen] = useState(false);
-  const [mobileTab, setMobileTab] = useState("history");
+  const [bottomSheet, setBottomSheet] = useState(null); // null | 'history' | 'panel'
 
   // ── Game report ──────────────────────────────────────────────────────────
   const [gameReport, setGameReport] = useState(null);
@@ -1004,8 +1008,8 @@ const App = () => {
       />
 
       <div className="flex-1 min-h-0 flex flex-col lg:grid lg:grid-cols-[220px_1fr_380px] overflow-hidden">
-        {/* Board — top on mobile, centre col on desktop */}
-        <div className="order-1 lg:order-2 flex items-center justify-center bg-background overflow-hidden p-0 lg:p-4 shrink-0 lg:shrink">
+        {/* Board — fills all height on mobile, centre col on desktop */}
+        <div className="flex-1 lg:flex-none lg:order-2 flex items-center justify-center bg-background overflow-hidden p-0 lg:p-4">
           <BoardPanel
             game={displayBoardGame}
             onMove={handleMove}
@@ -1027,72 +1031,147 @@ const App = () => {
           />
         </div>
 
-        {/* Mobile tab bar */}
-        <div className="order-2 lg:hidden flex shrink-0 border-t border-border bg-card">
+        {/* Desktop only — left sidebar */}
+        {isDesktop && (
+          <div className="min-w-0 min-h-0 lg:order-1">
+            <MoveHistorySidebar
+              game={gameReference.current}
+              moveHistory={moveHistory}
+              evalScore={evalScore}
+              moveQuality={moveQuality}
+              viewIndex={viewIndex}
+              onJumpToMove={handleJumpToMove}
+              onExitReview={handleExitReview}
+              onNavigateBack={handleNavigateBack}
+              onNavigateForward={handleNavigateForward}
+              onFlipBoard={() =>
+                setBoardOrientation((o) => (o === "white" ? "black" : "white"))
+              }
+              onUndo={handleUndo}
+              onCopyPgn={handleCopyPgn}
+              isAnalyzing={isAnalyzing}
+              analysisProgress={analysisProgress}
+              gameReport={gameReport}
+              onViewReport={() => setGameReportOpen(true)}
+              clockEnabled={clockEnabled}
+              timeWhite={clock.timeWhite}
+              timeBlack={clock.timeBlack}
+              currentTurn={gameReference.current.turn()}
+              clockFlagged={clock.flagged}
+              annotations={annotations}
+              onAnnotationChange={handleAnnotationChange}
+            />
+          </div>
+        )}
+
+        {/* Desktop only — right panel */}
+        {isDesktop && (
+          <div className="min-w-0 min-h-0 lg:order-3">
+            {!isLiveMode ? (
+              <TrainingPanel
+                onBoardUpdate={handleTrainingBoardUpdate}
+                onRegisterMoveHandler={handleRegisterMoveHandler}
+                messages={messages}
+                onSendMessage={handleSendMessage}
+                isLoading={isLoading}
+                onAskAI={handleAskAI}
+                onLearnWithAI={handleLearnWithAI}
+                tokenStats={tokenStats}
+                setMessages={setMessages}
+              />
+            ) : (
+              <ChatPanel
+                messages={messages}
+                onSendMessage={handleSendMessage}
+                isLoading={isLoading}
+                coachMode={coachMode}
+                onCoachModeChange={setCoachMode}
+                isLiveMode={isLiveMode}
+                onEngineAnalyze={handleEngineAnalyze}
+                onEngineBestMove={handleEngineBestMove}
+                onEngineHint={handleEngineHint}
+                onThinkLikeGM={() => {
+                  setCoachMode("ai");
+                  handleThinkLikeGM(moveHistory.map((m) => m.san));
+                }}
+                onAskAI={handleAskAI}
+                onLearnWithAI={handleLearnWithAI}
+                tokenStats={tokenStats}
+              />
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Mobile bottom nav bar */}
+      {!isDesktop && (
+        <div
+          className="shrink-0 flex border-t border-border bg-card"
+          style={{ paddingBottom: "max(12px, env(safe-area-inset-bottom))" }}
+        >
           <button
-            onClick={() => setMobileTab("history")}
-            className={`flex-1 py-2 text-xs font-medium transition-colors border-b-2 ${
-              mobileTab === "history"
-                ? "border-primary text-primary"
-                : "border-transparent text-muted-foreground"
+            onClick={() =>
+              setBottomSheet((s) => (s === "history" ? null : "history"))
+            }
+            className={`flex-1 flex items-center justify-center gap-2 pt-3 pb-2 text-sm font-medium transition-colors ${
+              bottomSheet === "history"
+                ? "text-primary"
+                : "text-muted-foreground"
             }`}
           >
+            <BookOpen className="h-4 w-4" />
             History
           </button>
           <button
-            onClick={() => setMobileTab("panel")}
-            className={`flex-1 py-2 text-xs font-medium transition-colors border-b-2 ${
-              mobileTab === "panel"
-                ? "border-primary text-primary"
-                : "border-transparent text-muted-foreground"
+            onClick={() =>
+              setBottomSheet((s) => (s === "panel" ? null : "panel"))
+            }
+            className={`flex-1 flex items-center justify-center gap-2 pt-3 pb-2 text-sm font-medium transition-colors ${
+              bottomSheet === "panel" ? "text-primary" : "text-muted-foreground"
             }`}
           >
+            {isLiveMode ? (
+              <MessageSquare className="h-4 w-4" />
+            ) : (
+              <GraduationCap className="h-4 w-4" />
+            )}
             {isLiveMode ? "Chat" : "Training"}
           </button>
         </div>
+      )}
 
-        {/* Left sidebar — first col on desktop, history tab on mobile */}
-        <div
-          className={`order-3 lg:order-1 min-w-0 min-h-0 ${
-            mobileTab === "history" ? "flex-1 overflow-hidden" : "hidden"
-          } lg:block`}
-        >
-          <MoveHistorySidebar
-            game={gameReference.current}
-            moveHistory={moveHistory}
-            evalScore={evalScore}
-            moveQuality={moveQuality}
-            viewIndex={viewIndex}
-            onJumpToMove={handleJumpToMove}
-            onExitReview={handleExitReview}
-            onNavigateBack={handleNavigateBack}
-            onNavigateForward={handleNavigateForward}
-            onFlipBoard={() =>
-              setBoardOrientation((o) => (o === "white" ? "black" : "white"))
-            }
-            onUndo={handleUndo}
-            onCopyPgn={handleCopyPgn}
-            isAnalyzing={isAnalyzing}
-            analysisProgress={analysisProgress}
-            gameReport={gameReport}
-            onViewReport={() => setGameReportOpen(true)}
-            clockEnabled={clockEnabled}
-            timeWhite={clock.timeWhite}
-            timeBlack={clock.timeBlack}
-            currentTurn={gameReference.current.turn()}
-            clockFlagged={clock.flagged}
-            annotations={annotations}
-            onAnnotationChange={handleAnnotationChange}
-          />
-        </div>
-
-        {/* Right panel — third col on desktop, panel tab on mobile */}
-        <div
-          className={`order-4 lg:order-3 min-w-0 min-h-0 ${
-            mobileTab === "panel" ? "flex-1 overflow-hidden" : "hidden"
-          } lg:block`}
-        >
-          {!isLiveMode ? (
+      {/* Mobile bottom sheet */}
+      {!isDesktop && bottomSheet && (
+        <BottomSheet onClose={() => setBottomSheet(null)}>
+          {bottomSheet === "history" ? (
+            <MoveHistorySidebar
+              game={gameReference.current}
+              moveHistory={moveHistory}
+              evalScore={evalScore}
+              moveQuality={moveQuality}
+              viewIndex={viewIndex}
+              onJumpToMove={handleJumpToMove}
+              onExitReview={handleExitReview}
+              onNavigateBack={handleNavigateBack}
+              onNavigateForward={handleNavigateForward}
+              onFlipBoard={() =>
+                setBoardOrientation((o) => (o === "white" ? "black" : "white"))
+              }
+              onUndo={handleUndo}
+              onCopyPgn={handleCopyPgn}
+              isAnalyzing={isAnalyzing}
+              analysisProgress={analysisProgress}
+              gameReport={gameReport}
+              onViewReport={() => setGameReportOpen(true)}
+              clockEnabled={clockEnabled}
+              timeWhite={clock.timeWhite}
+              timeBlack={clock.timeBlack}
+              currentTurn={gameReference.current.turn()}
+              clockFlagged={clock.flagged}
+              annotations={annotations}
+              onAnnotationChange={handleAnnotationChange}
+            />
+          ) : !isLiveMode ? (
             <TrainingPanel
               onBoardUpdate={handleTrainingBoardUpdate}
               onRegisterMoveHandler={handleRegisterMoveHandler}
@@ -1124,8 +1203,8 @@ const App = () => {
               tokenStats={tokenStats}
             />
           )}
-        </div>
-      </div>
+        </BottomSheet>
+      )}
 
       {/* Dialogs & Overlays */}
       <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
