@@ -492,26 +492,28 @@ const BoardPanel = ({
       ref={containerReference}
       className="flex flex-col items-center justify-center gap-2 w-full h-full"
     >
-      {/* Game status banner */}
-      {gameStatus && (
-        <div
-          className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium ${
-            gameStatus.type === "checkmate"
-              ? "bg-yellow-500/15 text-yellow-400"
-              : gameStatus.type === "check"
-                ? "bg-red-500/15 text-red-400"
-                : "bg-blue-500/15 text-blue-400"
-          }`}
-        >
-          <gameStatus.icon className="h-4 w-4" />
-          {gameStatus.text}
-          {isCheckmate && (
-            <span className="text-xs opacity-70 ml-1">
-              {turn === "w" ? "Black" : "White"} wins
-            </span>
-          )}
-        </div>
-      )}
+      {/* Game status banner — always reserves space to prevent layout shift */}
+      <div className="flex items-center justify-center h-8 shrink-0">
+        {gameStatus && (
+          <div
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium ${
+              gameStatus.type === "checkmate"
+                ? "bg-yellow-500/15 text-yellow-400"
+                : gameStatus.type === "check"
+                  ? "bg-red-500/15 text-red-400"
+                  : "bg-blue-500/15 text-blue-400"
+            }`}
+          >
+            <gameStatus.icon className="h-4 w-4" />
+            {gameStatus.text}
+            {isCheckmate && (
+              <span className="text-xs opacity-70 ml-1">
+                {turn === "w" ? "Black" : "White"} wins
+              </span>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Captured pieces — opponent (top) */}
       <div
