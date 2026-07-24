@@ -164,7 +164,7 @@ const BoardPanel = ({
       if (containerReference.current) {
         const { width, height } =
           containerReference.current.getBoundingClientRect();
-        const maxSize = Math.min(width - 48, height - 120);
+        const maxSize = Math.min(width - 8, height - 48);
         setBoardWidth(Math.max(280, Math.floor(maxSize)));
       }
     };
@@ -436,12 +436,33 @@ const BoardPanel = ({
     }
 
     const QUALITY_META = {
-      Brilliant: { emoji: "💎", colorClass: "bg-cyan-500 text-white border-cyan-400 shadow-cyan-500/30" },
-      Excellent: { emoji: "✨", colorClass: "bg-emerald-500 text-white border-emerald-400 shadow-emerald-500/30" },
-      Good: { emoji: "👍", colorClass: "bg-green-600 text-white border-green-500/30" },
-      Inaccuracy: { emoji: "⚠️", colorClass: "bg-yellow-500 text-zinc-900 border-yellow-400 shadow-yellow-500/30" },
-      Mistake: { emoji: "❌", colorClass: "bg-orange-500 text-white border-orange-400 shadow-orange-500/30" },
-      Blunder: { emoji: "💥", colorClass: "bg-red-500 text-white border-red-400 shadow-red-500/30" },
+      Brilliant: {
+        emoji: "💎",
+        colorClass: "bg-cyan-500 text-white border-cyan-400 shadow-cyan-500/30",
+      },
+      Excellent: {
+        emoji: "✨",
+        colorClass:
+          "bg-emerald-500 text-white border-emerald-400 shadow-emerald-500/30",
+      },
+      Good: {
+        emoji: "👍",
+        colorClass: "bg-green-600 text-white border-green-500/30",
+      },
+      Inaccuracy: {
+        emoji: "⚠️",
+        colorClass:
+          "bg-yellow-500 text-zinc-900 border-yellow-400 shadow-yellow-500/30",
+      },
+      Mistake: {
+        emoji: "❌",
+        colorClass:
+          "bg-orange-500 text-white border-orange-400 shadow-orange-500/30",
+      },
+      Blunder: {
+        emoji: "💥",
+        colorClass: "bg-red-500 text-white border-red-400 shadow-red-500/30",
+      },
     };
 
     const meta = QUALITY_META[activeMoveQuality];
@@ -536,7 +557,7 @@ const BoardPanel = ({
       {/* Chess Board */}
       <div
         className="rounded-lg overflow-hidden shadow-lg border border-border relative"
-        style={{ width: boardWidth, height: boardWidth }}
+        style={{ width: boardWidth + 50, height: boardWidth + 50 }}
       >
         {/* AI thinking overlay */}
         {isAIThinking && (

@@ -129,7 +129,7 @@ const ControlBar = ({
   onToggleDarkMode,
   // Train
 }) => (
-  <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-card gap-2 flex-wrap">
+  <div className="flex items-center justify-between px-2 py-2 border-b border-border bg-card gap-2 flex-wrap sm:px-4">
     {/* Left — branding */}
     <div className="flex items-center gap-2 shrink-0">
       <span className="text-base font-bold tracking-tight text-primary">
@@ -138,7 +138,7 @@ const ControlBar = ({
     </div>
 
     {/* Center — controls */}
-    <div className="flex items-center gap-2 flex-wrap">
+    <div className="flex items-center gap-1.5 flex-wrap sm:gap-2">
       {/* Opponent selector */}
       <Dropdown
         label="Opponent"
@@ -178,20 +178,20 @@ const ControlBar = ({
             isLiveMode ? "text-primary" : "text-muted-foreground"
           }`}
         />
-        <span className="text-xs text-muted-foreground">
+        <span className="text-xs text-muted-foreground hidden sm:inline">
           {isLiveMode ? "Live Mode" : "Training"}
         </span>
         <Switch checked={isLiveMode} onCheckedChange={onToggleLiveMode} />
       </div>
 
-      <Button variant="ghost" size="sm" onClick={onNewGame}>
+      <Button variant="ghost" size="sm" onClick={onNewGame} className="px-2 sm:px-3">
         <RotateCcw className="h-4 w-4" />
-        New Game
+        <span className="hidden sm:inline">New Game</span>
       </Button>
 
-      <Button variant="ghost" size="sm" onClick={onOpenSavedGames}>
+      <Button variant="ghost" size="sm" onClick={onOpenSavedGames} className="px-2 sm:px-3">
         <FolderOpen className="h-4 w-4" />
-        Save / Load
+        <span className="hidden sm:inline">Save / Load</span>
       </Button>
 
       {/* <Button variant="ghost" size="sm" onClick={onSetPosition}>

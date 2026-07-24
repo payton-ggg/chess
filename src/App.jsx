@@ -132,6 +132,7 @@ const App = () => {
   const [savedGamesOpen, setSavedGamesOpen] = useState(false);
   const autoSaveTimerReference = useRef(null);
   const [positionSetupOpen, setPositionSetupOpen] = useState(false);
+  const [mobileTab, setMobileTab] = useState("history");
 
   // ── Game report ──────────────────────────────────────────────────────────
   const [gameReport, setGameReport] = useState(null);
@@ -1002,8 +1003,60 @@ const App = () => {
         onSetTimeControl={setClockTimeControl}
       />
 
-      <div className="grid grid-cols-[220px_1fr_380px] flex-1 overflow-hidden">
-        <div className="min-w-0 min-h-0">
+      <div className="flex-1 min-h-0 flex flex-col lg:grid lg:grid-cols-[220px_1fr_380px] overflow-hidden">
+        {/* Board — top on mobile, centre col on desktop */}
+        <div className="order-1 lg:order-2 flex items-center justify-center bg-background overflow-hidden p-0 lg:p-4 shrink-0 lg:shrink">
+          <BoardPanel
+            game={displayBoardGame}
+            onMove={handleMove}
+            lastMoveSquares={displayBoardLastMove}
+            isAIThinking={isAIThinking && !trainingBoard.isTrainingActive}
+            boardOrientation={displayBoardOrientation}
+            isReviewMode={viewIndex !== null && !trainingBoard.isTrainingActive}
+            arrows={displayBoardArrows}
+            premove={premove}
+            playerColor={playerColor}
+            onPlayerColorChange={handlePlayerColorChange}
+            isGameInProgress={moveHistory.length > 0}
+            activeMoveTo={activeMoveTo}
+            activeMoveQuality={activeMoveQuality}
+            onCancelPremove={() => {
+              setPremove(null);
+              premoveReference.current = null;
+            }}
+          />
+        </div>
+
+        {/* Mobile tab bar */}
+        <div className="order-2 lg:hidden flex shrink-0 border-t border-border bg-card">
+          <button
+            onClick={() => setMobileTab("history")}
+            className={`flex-1 py-2 text-xs font-medium transition-colors border-b-2 ${
+              mobileTab === "history"
+                ? "border-primary text-primary"
+                : "border-transparent text-muted-foreground"
+            }`}
+          >
+            History
+          </button>
+          <button
+            onClick={() => setMobileTab("panel")}
+            className={`flex-1 py-2 text-xs font-medium transition-colors border-b-2 ${
+              mobileTab === "panel"
+                ? "border-primary text-primary"
+                : "border-transparent text-muted-foreground"
+            }`}
+          >
+            {isLiveMode ? "Chat" : "Training"}
+          </button>
+        </div>
+
+        {/* Left sidebar — first col on desktop, history tab on mobile */}
+        <div
+          className={`order-3 lg:order-1 min-w-0 min-h-0 ${
+            mobileTab === "history" ? "flex-1 overflow-hidden" : "hidden"
+          } lg:block`}
+        >
           <MoveHistorySidebar
             game={gameReference.current}
             moveHistory={moveHistory}
@@ -1033,29 +1086,12 @@ const App = () => {
           />
         </div>
 
-        <div className="flex items-center justify-center bg-background overflow-hidden p-4">
-          <BoardPanel
-            game={displayBoardGame}
-            onMove={handleMove}
-            lastMoveSquares={displayBoardLastMove}
-            isAIThinking={isAIThinking && !trainingBoard.isTrainingActive}
-            boardOrientation={displayBoardOrientation}
-            isReviewMode={viewIndex !== null && !trainingBoard.isTrainingActive}
-            arrows={displayBoardArrows}
-            premove={premove}
-            playerColor={playerColor}
-            onPlayerColorChange={handlePlayerColorChange}
-            isGameInProgress={moveHistory.length > 0}
-            activeMoveTo={activeMoveTo}
-            activeMoveQuality={activeMoveQuality}
-            onCancelPremove={() => {
-              setPremove(null);
-              premoveReference.current = null;
-            }}
-          />
-        </div>
-
-        <div className="min-w-0 min-h-0">
+        {/* Right panel — third col on desktop, panel tab on mobile */}
+        <div
+          className={`order-4 lg:order-3 min-w-0 min-h-0 ${
+            mobileTab === "panel" ? "flex-1 overflow-hidden" : "hidden"
+          } lg:block`}
+        >
           {!isLiveMode ? (
             <TrainingPanel
               onBoardUpdate={handleTrainingBoardUpdate}
