@@ -6,7 +6,7 @@ import {
   SkipForward,
   Target,
 } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useCallback } from "react";
 import { Chessboard } from "react-chessboard";
 
 import { Button } from "@/components/ui/button";
@@ -37,6 +37,10 @@ const BlunderReviewMode = ({ blunders = [], onClose }) => {
   const [answered, setAnswered] = useState(false);
   const [playerMoveSan, setPlayerMoveSan] = useState(null);
   const [isCorrect, setIsCorrect] = useState(false);
+
+  // ── Touch / swipe state (refs → no re-renders) ────────────────────────────
+  const touchStartX = useRef(null);
+  const touchStartY = useRef(null);
 
   const blunder = blunders[index] ?? null;
 
@@ -162,6 +166,39 @@ const BlunderReviewMode = ({ blunders = [], onClose }) => {
     setIsCorrect(false);
   };
 
+  // ── Swipe handlers ────────────────────────────────────────────────────────
+  const handleTouchStart = useCallback((e) => {
+    const t = e.touches[0];
+    touchStartX.current = t.clientX;
+    touchStartY.current = t.clientY;
+  }, []);
+
+  const handleTouchEnd = useCallback(
+    (e) => {
+      if (touchStartX.current === null) return;
+      const t = e.changedTouches[0];
+      const dx = t.clientX - touchStartX.current;
+      const dy = t.clientY - touchStartY.current;
+      touchStartX.current = null;
+      touchStartY.current = null;
+
+      // Ignore mostly-vertical swipes (scrolling)
+      if (Math.abs(dy) > Math.abs(dx) * 1.2) return;
+      // Minimum swipe distance
+      if (Math.abs(dx) < 40) return;
+
+      if (dx < 0) {
+        // Swipe left → next
+        if (answered) handleNext();
+      } else {
+        // Swipe right → prev
+        handlePrevious();
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [answered, index],
+  );
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-3 sm:p-5 animate-in fade-in duration-200">
       <div className="bg-card border border-border rounded-2xl shadow-2xl animate-in fade-in zoom-in-95 duration-200 flex flex-col lg:flex-row w-full max-w-400 max-h-[155vh] overflow-hidden">
@@ -212,7 +249,11 @@ const BlunderReviewMode = ({ blunders = [], onClose }) => {
         </div>
 
         {/* ── Info panel ───────────────────────────────────────────────────── */}
-        <div className="flex flex-col flex-1 p-5 gap-4 min-w-0 overflow-y-auto">
+        <div
+          className="flex flex-col flex-1 p-5 gap-4 min-w-0 overflow-y-auto"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
           {/* Header */}
           <div className="flex items-start justify-between gap-2">
             <div>
